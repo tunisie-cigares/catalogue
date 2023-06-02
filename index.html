@@ -1,35 +1,4 @@
-import time
-from selenium import webdriver
-from bs4 import BeautifulSoup
-from urllib.parse import urljoin
-import webbrowser
 
-url = "https://www.denner.ch/fr/assortiment/cigares/"
-
-# Set up Chrome WebDriver (Make sure you have the Chrome WebDriver executable installed and in your PATH)
-driver = webdriver.Chrome()
-
-# Load the page with Selenium
-driver.get(url)
-
-# Scroll to the bottom of the page to trigger dynamic content loading
-driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-time.sleep(3)  # Wait for the content to load (adjust the sleep duration if needed)
-
-# Get the page source after the content has loaded
-page_source = driver.page_source
-
-# Quit the WebDriver
-driver.quit()
-
-# Parse the HTML content using BeautifulSoup
-soup = BeautifulSoup(page_source, "html.parser")
-
-# Find the elements that contain the catalog data
-cigars = soup.find_all("div", class_="col-lg-3 col-sm-4 mb-3")
-
-# Create an HTML string for the matrix layout
-html = """
 <html>
 <head>
 <style>
@@ -52,73 +21,88 @@ img {
 </head>
 <body>
 <table>
-"""
-
-html += "<tr>"
-
-#sort cigars by price (keep only numerals and dots
-cigars.sort(key=lambda x: float(''.join(filter(lambda y: y.isdigit() or y == '.', x.find("span", class_="aktuell").text.strip().split(" ")[0]))), reverse=False)
-
-# Loop through the elements to get the data
-for i, cigar in enumerate(cigars):
-    # Find the desired information on the cigar
-    cigar_photo_relative = cigar.find("img")["data-src"]
-    cigar_photo_absolute = urljoin(url, cigar_photo_relative)
-    
-    #find the url of the page displayed when you click on the cigar
-    cigar_url_relative = cigar.find("a")["href"]
-    cigar_url_absolute = urljoin(url, cigar_url_relative)
-
-    driver = webdriver.Chrome()
-    driver.get(cigar_url_absolute)
-    page_source = driver.page_source
-    driver.quit()
-    soup = BeautifulSoup(page_source, "html.parser")
-    cigar_text = soup.find("div", class_="col-md-6").text.strip()
-    #detect the word "pièces" and get the number of pieces before it
-    nb_pieces = int(cigar_text.split("pièces")[0].split(" ")[-1])
-    cigar_price_element = cigar.find("span", class_="aktuell")
-    cigar_price = cigar_price_element.text.strip().split(" ")[0]
-    cigar_price = float(''.join(filter(lambda x: x.isdigit() or x == '.', cigar_price)))
-
-    if cigar_price/nb_pieces < 7.5:
-        cigar_price = str(int(cigar_price * 2.4 * 3.4)+1)
-    elif cigar_price/nb_pieces < 10:
-        cigar_price = str(int(cigar_price * 2 * 3.4)+1)
-    else:
-        cigar_price = str(int(cigar_price * 1.4 * 3.4)+1)
-
-    #take two first digits of the price 
-    if int(cigar_price[-2:]) < 10:
-        cigar_price = cigar_price[:-3] + str(int(cigar_price[-3])-1) + "99"
-    else:
-        cigar_price = cigar_price[:-1] + "9"
-
-    cigar_price = cigar_price + " TND"
-    cigar_name = cigar.find("h4").text.strip()
-    if "Griffin" in cigar_name:
-        cigar_name = "Davidoff " + cigar_name
-
-    # Create an HTML string for the cigar
-    html += f"""
+<tr>
         <td>
-            <img src="{cigar_photo_absolute}">
-            <p>{cigar_price}</p>
-            <p>{cigar_name}</p>
-            <p>{nb_pieces} Pièces</p>
+            <img src="https://denner.imgix.net/assets/e875eba7-2c73-4d06-9319-2199b2a1337b/web/853714_21_08_13.png?fit=fillmax&fill=solid&h=200&w=200&fm=webp&q=75&auto=format">
+            <p>129 TND</p>
+            <p>Private Stock MF No.2 Tub 3</p>
+            <p>3 Pièces</p>
         </td>
-    """
     
-    # Insert a line break after every 4th cigar
-    if (i + 1) % 4 == 0:
-        html += "</tr><tr>"
-
-html += "</tr>"
-html += "</table></body></html>"
-
-# Save the HTML string to a file
-with open("cigars.html", "w") as f:
-    f.write(html)
-
-# Open the file in the default browser
-webbrowser.open("cigars.html")
+        <td>
+            <img src="https://denner.imgix.net/assets/e4d90662-db74-4784-bf93-ed6a23134744/web/853713_1_c_K.png?fit=fillmax&fill=solid&h=200&w=200&fm=webp&q=75&auto=format">
+            <p>259 TND</p>
+            <p>Davidoff Griffin's No. 500 Cello</p>
+            <p>5 Pièces</p>
+        </td>
+    
+        <td>
+            <img src="https://denner.imgix.net/assets/45342cad-65d1-47a1-9d79-40a4b1eaccd6/web/861697_2_c_K.png?fit=fillmax&fill=solid&h=200&w=200&fm=webp&q=75&auto=format">
+            <p>449 TND</p>
+            <p>Bundle Selection by Cusano Robusto</p>
+            <p>16 Pièces</p>
+        </td>
+    
+        <td>
+            <img src="https://denner.imgix.net/assets/592f299b-f4b7-41f1-b87d-4f12b1b5e45a/web/850906_1_c_K.png?fit=fillmax&fill=solid&h=200&w=200&fm=webp&q=75&auto=format">
+            <p>519 TND</p>
+            <p>Principes Long Filler Robusto Claro</p>
+            <p>25 Pièces</p>
+        </td>
+    </tr><tr>
+        <td>
+            <img src="https://denner.imgix.net/assets/a46c48dc-b2a0-4623-bade-fd2317789d98/web/861703_2_c_K.png?fit=fillmax&fill=solid&h=200&w=200&fm=webp&q=75&auto=format">
+            <p>539 TND</p>
+            <p>Bundle Selection by Cusano Churchill Cello</p>
+            <p>16 Pièces</p>
+        </td>
+    
+        <td>
+            <img src="https://denner.imgix.net/assets/447683e6-0ab7-4a96-99f0-1ec1eaab88bd/web/858986_1_c_K.png?fit=fillmax&fill=solid&h=200&w=200&fm=webp&q=75&auto=format">
+            <p>339 TND</p>
+            <p>Montecristo No. 3</p>
+            <p>5 Pièces</p>
+        </td>
+    
+        <td>
+            <img src="https://denner.imgix.net/assets/ff74b9f7-71eb-4101-bb38-d7a4d25b33b7/web/866555_c_p_A.png?fit=fillmax&fill=solid&h=200&w=200&fm=webp&q=75&auto=format">
+            <p>829 TND</p>
+            <p>Joya de Nicaragua Clásico No. 6</p>
+            <p>25 Pièces</p>
+        </td>
+    
+        <td>
+            <img src="https://denner.imgix.net/assets/4eeaef5d-11b3-4785-b5b5-69c57c1832ea/web/825632_2_c_K.png?fit=fillmax&fill=solid&h=200&w=200&fm=webp&q=75&auto=format">
+            <p>1299 TND</p>
+            <p>Romeo y Julieta Mille Fleurs</p>
+            <p>25 Pièces</p>
+        </td>
+    </tr><tr>
+        <td>
+            <img src="https://denner.imgix.net/assets/a012d3e6-4cdf-47ad-b024-8b323a188178/web/861699_1_c_K.png?fit=fillmax&fill=solid&h=200&w=200&fm=webp&q=75&auto=format">
+            <p>1469 TND</p>
+            <p>Romeo y Julieta No. 2</p>
+            <p>25 Pièces</p>
+        </td>
+    
+        <td>
+            <img src="https://denner.imgix.net/assets/fcf5e8cb-3243-4e74-b46d-8e687f5a9d2d/web/859540_c_1_K.png?fit=fillmax&fill=solid&h=200&w=200&fm=webp&q=75&auto=format">
+            <p>1399 TND</p>
+            <p>Montecristo No. 4</p>
+            <p>25 Pièces</p>
+        </td>
+    
+        <td>
+            <img src="https://denner.imgix.net/assets/6a6388d5-be57-417a-a88c-2d691fb59f24/web/863092_1_c_K.png?fit=fillmax&fill=solid&h=200&w=200&fm=webp&q=75&auto=format">
+            <p>1429 TND</p>
+            <p>Davidoff Griffin's Robusto</p>
+            <p>25 Pièces</p>
+        </td>
+    
+        <td>
+            <img src="https://denner.imgix.net/assets/e81b805f-c82d-41e3-b091-f8d49a50c702/web/863091_1_c_K.png?fit=fillmax&fill=solid&h=200&w=200&fm=webp&q=75&auto=format">
+            <p>2229 TND</p>
+            <p>Partagas Serie D No. 4</p>
+            <p>25 Pièces</p>
+        </td>
+    </tr><tr></tr></table></body></html>
